@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nanqiu.entity.User;
 import com.nanqiu.entity.VO.TimeoutVo;
+import com.nanqiu.entity.VO.UserVo;
 import com.nanqiu.mapper.BathroomMapper;
 import com.nanqiu.mapper.HistoryMapper;
 import com.nanqiu.mapper.UserMapper;
+import com.nanqiu.mapper.UserVoMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -38,20 +40,22 @@ public class UserController {
     private BathroomMapper bathroomMapper;
     @Autowired
     private HistoryMapper historyMapper;
+    @Autowired
+    private UserVoMapper userVoMapper;
 
     @ApiImplicitParam(name = "user",value = "用户对象",required = true)
     @ApiOperation(value = "通过登录表单生成一个user对象，再查询")
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody User user){
         HashMap<String, Object> map = new HashMap<>();
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        QueryWrapper<UserVo> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id",user.getUserId());
         wrapper.eq("password",user.getPassword());
-        if (userMapper.selectOne(wrapper) == null){
+        if (userVoMapper.selectOne(wrapper) == null){
             map.put("state",false);
             map.put("msg","用户名或密码错误！");
         } else{
-            map.put("user",userMapper.selectOne(wrapper));
+            map.put("user",userVoMapper.selectOne(wrapper));
             map.put("state",true);
             map.put("msg","登陆成功！");
         }
@@ -145,8 +149,8 @@ public class UserController {
     @GetMapping("/queryAll")
     public Map<String,Object> queryAll(int curPage){
         HashMap<String, Object> map = new HashMap<>();
-        Page<User> page = new Page<>(curPage,10);
-        Page<User> userPage = userMapper.selectPage(page,null);
+        Page<UserVo> page = new Page<>(curPage,10);
+        Page<UserVo> userPage = userVoMapper.selectPage(page,null);
         map.put("userList",userPage.getRecords());
         map.put("maxPage",userPage.getPages());
         map.put("total",userPage.getTotal());
