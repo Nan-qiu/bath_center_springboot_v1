@@ -53,7 +53,7 @@ public class HistoryController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "name",value = "查询的姓名",required = true),
             @ApiImplicitParam(name = "curPage",value = "页数",required = true)})
-    @ApiOperation(value = "通过name模糊查询对应user_name的历史记录")
+    @ApiOperation(value = "模糊查询对应user_name的历史记录")
     @GetMapping("/queryByName")
     public Map<String, Object> queryHistoryByName(String name,int curPage){
         HashMap<String, Object> map = new HashMap<>();

@@ -43,27 +43,27 @@ public class UserController {
     @Autowired
     private UserVoMapper userVoMapper;
 
-    @ApiImplicitParam(name = "user",value = "用户对象",required = true)
-    @ApiOperation(value = "通过登录表单生成一个user对象，再查询")
-    @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody User user){
-        HashMap<String, Object> map = new HashMap<>();
-        QueryWrapper<UserVo> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id",user.getUserId());
-        wrapper.eq("password",user.getPassword());
-        if (userVoMapper.selectOne(wrapper) == null){
-            map.put("state",false);
-            map.put("msg","用户名或密码错误！");
-        } else{
-            map.put("user",userVoMapper.selectOne(wrapper));
-            map.put("state",true);
-            map.put("msg","登陆成功！");
-        }
-        return map;
-    }
+//    @ApiImplicitParam(name = "user",value = "用户对象",required = true)
+//    @ApiOperation(value = "通过登录表单生成一个user对象，再查询")
+//    @PostMapping("/login")
+//    public Map<String, Object> login(@RequestBody User user){
+//        HashMap<String, Object> map = new HashMap<>();
+//        QueryWrapper<UserVo> wrapper = new QueryWrapper<>();
+//        wrapper.eq("user_id",user.getUserId());
+//        wrapper.eq("password",user.getPassword());
+//        if (userVoMapper.selectOne(wrapper) == null){
+//            map.put("state",false);
+//            map.put("msg","用户名或密码错误！");
+//        } else{
+//            map.put("user",userVoMapper.selectOne(wrapper));
+//            map.put("state",true);
+//            map.put("msg","登陆成功！");
+//        }
+//        return map;
+//    }
 
-    @ApiImplicitParam(name = "user",value = "用户对象",required = true)
-    @ApiOperation(value = "通过注册表单生成一个user对象，再插入")
+    @ApiImplicitParam(name = "user", value = "用户对象", required = true)
+    @ApiOperation(value = "用户注册")
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody User user){
         userMapper.insert(user);
@@ -73,15 +73,14 @@ public class UserController {
         return map;
     }
 
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "user",value = "用户对象",required = true),
-            @ApiImplicitParam(name = "money",value = "要充值的金额",required = true)})
-    @ApiOperation(value = "通过传入的user对象确定用户，并充值money元")
+
+    @ApiImplicitParam(name = "massage", value = "用户id和money", required = true)
+    @ApiOperation(value = "用户充值")
     @PostMapping("/charge")
-    public Map<String, Object> charge(@RequestBody User user,int money){
+    public Map<String, Object> charge(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
-        User curUser = userMapper.selectById(user.getUserId());
-        int nMoney = curUser.getMoney() + money;
+        User curUser = userMapper.selectById((Integer) massage.get("userId"));
+        int nMoney = curUser.getMoney() + (Integer) massage.get("money");
         curUser.setMoney(nMoney);
         userMapper.updateById(curUser);
         map.put("state",true);
@@ -90,45 +89,37 @@ public class UserController {
     }
 
     /**
-     * @param user     传入的user对象
-     * @param spendWay 传入的套餐：
+     * @param massage 传入的套餐和用户id：
      *                 spendWay=1，为30分钟套餐，10元；
      *                 spendWay=2，为60分钟套餐，18元；
      *                 spendWay=3，为90分钟套餐，25元
      */
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "user",value = "用户对象",required = true),
-            @ApiImplicitParam(name = "spendWay",value = "选择的套餐",required = true)})
-    @ApiOperation(value =
-            "通过传入的user对象确定用户，并选择要那种套餐\n" +
-            "spendWay=1，为30分钟套餐，10元\n" +
-            "spendWay=2，为60分钟套餐，18元\n" +
-            "spendWay=3，为90分钟套餐，25元")
+
+    @ApiImplicitParam(name = "massage", value = "用户id和spendWay", required = true)
+    @ApiOperation(value = "选择套餐")
     @PostMapping("/spend")
-    public Map<String, Object> spend(@RequestBody User user,int spendWay){
+    public Map<String, Object> spend(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
         //选择套餐和返回的超时时间
-        int spendMoney=0,time = 0;
-        if (spendWay == 1) {
+        int spendMoney = 0, time = 0;
+        if ((Integer) massage.get("spendWay") == 1){
             spendMoney = 10;
             time = 30;
-        }
-        else if (spendWay == 2){
+        } else if ((Integer) massage.get("spendWay") == 2){
             spendMoney = 18;
             time = 60;
-        }
-        else if (spendWay == 3) {
+        } else if ((Integer) massage.get("spendWay") == 3){
             spendMoney = 25;
             time = 90;
         }
-        User curUser = userMapper.selectById(user.getUserId());
+        User curUser = userMapper.selectById((Integer) massage.get("userId"));
         int nMoney = curUser.getMoney();
         if (nMoney < spendMoney){
             map.put("state",false);
             map.put("msg","余额不足！");
         } else{
             map.put("state",true);
-            map.put("msg","已支付，欢迎下次光临！");
+            map.put("msg","已支付，请进澡堂！");
             map.put("time",time);
             nMoney -= spendMoney;
         }
@@ -147,7 +138,7 @@ public class UserController {
 
     @ApiOperation(value = "查询所有用户")
     @GetMapping("/queryAll")
-    public Map<String,Object> queryAll(int curPage){
+    public Map<String, Object> queryAll(int curPage){
         HashMap<String, Object> map = new HashMap<>();
         Page<UserVo> page = new Page<>(curPage,10);
         Page<UserVo> userPage = userVoMapper.selectPage(page,null);
@@ -158,11 +149,11 @@ public class UserController {
     }
 
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "name",value = "查询的名字",required = true),
-            @ApiImplicitParam(name = "curPage",value = "查询的页数",required = true)})
-    @ApiOperation(value = "通过输入的name模糊查询对应的user_name，curPage为查询的页数")
+            @ApiImplicitParam(name = "name", value = "查询的名字", required = true),
+            @ApiImplicitParam(name = "curPage", value = "查询的页数", required = true)})
+    @ApiOperation(value = "输入name模糊查询")
     @GetMapping("/queryByName")
-    public Map<String,Object> queryUserByName(String name,int curPage){
+    public Map<String, Object> queryUserByName(String name,int curPage){
         HashMap<String, Object> map = new HashMap<>();
         Page<User> page = new Page<>(curPage,10);
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -175,10 +166,10 @@ public class UserController {
         return map;
     }
 
-    @ApiImplicitParam(name = "userId",value = "用户id",required = true)
+    @ApiImplicitParam(name = "userId", value = "用户id", required = true)
     @ApiOperation(value = "删除用户")
     @GetMapping("/delete")
-    public Map<String,Object> deleteById(int userId){
+    public Map<String, Object> deleteById(int userId){
         HashMap<String, Object> map = new HashMap<>();
         userMapper.deleteById(userId);
         map.put("state",true);

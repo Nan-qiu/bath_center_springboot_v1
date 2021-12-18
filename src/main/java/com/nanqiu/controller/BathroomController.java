@@ -40,39 +40,33 @@ public class BathroomController {
     private HistoryMapper historyMapper;
 
     /**
-     * @param user 前端传来的user对象
-     * @param bId  澡堂的id
-     * @param time /user/spend 传来的time套餐时间
+     * @param massage 前端传来的userId,time和userName
      * @return
      */
-    @ApiImplicitParams({@ApiImplicitParam(name = "user", value = "用户对象", required = true),
-            @ApiImplicitParam(name = "bId", value = "澡堂id", required = true),
-            @ApiImplicitParam(name = "time", value = "套餐时间", required = true)})
-    @ApiOperation(value =
-            "通过传入的user确定用户，bId确定要进入的澡堂，time是/user/spend 传来的time套餐时间\n" +
-                    "用户进入，用户is_shower置1，history的is_quit置0，当前澡堂人数+1，生成过期时间timeout,自动填充enter_time")
+    @ApiImplicitParam(name = "massage", value = "userId,bId,time和userName", required = true)
+    @ApiOperation(value = "用户进入澡堂")
     @PostMapping("/enter")
-    public Map<String, Object> enter(@RequestBody User user,int bId,int time){
+    public Map<String, Object> enter(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
         //把标志位isShower置1
-        User curUser = userMapper.selectById(user.getUserId());
+        User curUser = userMapper.selectById((Integer) massage.get("userId"));
         curUser.setIsShower(1);
         userMapper.updateById(curUser);
 
         //当前澡堂人数+1
-        Bathroom bathroom = bathroomMapper.selectById(bId);
+        Bathroom bathroom = bathroomMapper.selectById((Integer) massage.get("bId"));
         Integer people = bathroom.getPeople();
         bathroom.setPeople(people + 1);
         bathroomMapper.updateById(bathroom);
 
         //生成过期时间
         Calendar timeout = Calendar.getInstance();
-        timeout.add(Calendar.MINUTE,time);
+        timeout.add(Calendar.MINUTE,(Integer) massage.get("time"));
 
         //增加history记录,自动填充enterTime
         History history = new History();
-        history.setUserId(user.getUserId());
-        history.setUserName(user.getUserName());
+        history.setUserId((Integer) massage.get("userId"));
+        history.setUserName((String) massage.get("userName"));
         history.setBName(bathroom.getBName());
         history.setTimeout(timeout.getTime());
         history.setIsQuit(0);
@@ -83,27 +77,25 @@ public class BathroomController {
         return map;
     }
 
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "user", value = "用户对象", required = true),
-            @ApiImplicitParam(name = "bId", value = "澡堂id", required = true)})
-    @ApiOperation(value = "通过传入的user确定用户，bId确定要退出的澡堂，用户退出，is_shower置0，is_quit置1，当前澡堂人数-1,自动填充quit_time")
+    @ApiImplicitParam(name = "massage", value = "userId和bId", required = true)
+    @ApiOperation(value = "用户退出澡堂")
     @PostMapping("/quit")
-    public Map<String, Object> quit(@RequestBody User user,int bId){
+    public Map<String, Object> quit(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
         //把标志位isShower置0
-        User curUser = userMapper.selectById(user.getUserId());
+        User curUser = userMapper.selectById((Integer) massage.get("userId"));
         curUser.setIsShower(0);
         userMapper.updateById(curUser);
 
         //当前澡堂人数-1
-        Bathroom bathroom = bathroomMapper.selectById(bId);
+        Bathroom bathroom = bathroomMapper.selectById((Integer) massage.get("bId"));
         Integer people = bathroom.getPeople();
         bathroom.setPeople(people - 1);
         bathroomMapper.updateById(bathroom);
 
         //增加quitTime
         QueryWrapper<History> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id",user.getUserId());
+        wrapper.eq("user_id", massage.get("userId"));
         wrapper.eq("is_quit",0);
         History history = historyMapper.selectOne(wrapper);
         System.out.println(history);

@@ -1,0 +1,16 @@
+package com.nanqiu.config;
+
+import com.nanqiu.utils.interceptors.JWTInterceptor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class InterceptorConfig implements WebMvcConfigurer {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry){
+        registry.addInterceptor(new JWTInterceptor())
+                .excludePathPatterns("/admin/login","/admin/register") //不拦截
+                .addPathPatterns("/**");
+    }
+}
