@@ -43,7 +43,12 @@ public class HistoryController {
     public Map<String, Object> queryAll(int curPage){
         HashMap<String, Object> map = new HashMap<>();
         Page<History> page = new Page<>(curPage,10);
-        Page<History> historyPage = historyMapper.selectPage(page,null);
+
+        QueryWrapper<History> wrapper = new QueryWrapper<>();
+        wrapper.isNotNull("quit_time");
+        wrapper.orderByDesc("quit_time");
+        Page<History> historyPage = historyMapper.selectPage(page,wrapper);
+
         map.put("historyList",historyPage.getRecords());
         map.put("maxPage",historyPage.getPages());
         map.put("total",historyPage.getTotal());

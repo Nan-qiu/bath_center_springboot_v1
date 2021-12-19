@@ -43,14 +43,21 @@ public class BathroomController {
      * @param massage 前端传来的userId,time和userName
      * @return
      */
-    @ApiImplicitParam(name = "massage", value = "userId,bId,time和userName", required = true)
+    @ApiImplicitParam(name = "massage", value = "userId,bId和time", required = true)
     @ApiOperation(value = "用户进入澡堂")
     @PostMapping("/enter")
     public Map<String, Object> enter(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
         //把标志位isShower置1
         User curUser = userMapper.selectById((Integer) massage.get("userId"));
+        if (curUser.getIsShower()==1){
+            map.put("state",false);
+            map.put("msg","请勿重复进入！cnd");
+            return map;
+        }
         curUser.setIsShower(1);
+        //把bId存入user的inBath
+        curUser.setInBath((Integer) massage.get("bId"));
         userMapper.updateById(curUser);
 
         //当前澡堂人数+1
@@ -66,7 +73,7 @@ public class BathroomController {
         //增加history记录,自动填充enterTime
         History history = new History();
         history.setUserId((Integer) massage.get("userId"));
-        history.setUserName((String) massage.get("userName"));
+        history.setUserName(curUser.getUserName());
         history.setBName(bathroom.getBName());
         history.setTimeout(timeout.getTime());
         history.setIsQuit(0);
@@ -77,18 +84,23 @@ public class BathroomController {
         return map;
     }
 
-    @ApiImplicitParam(name = "massage", value = "userId和bId", required = true)
+    @ApiImplicitParam(name = "massage", value = "userId", required = true)
     @ApiOperation(value = "用户退出澡堂")
     @PostMapping("/quit")
     public Map<String, Object> quit(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
         //把标志位isShower置0
         User curUser = userMapper.selectById((Integer) massage.get("userId"));
+        if(curUser.getIsShower()==0){
+            map.put("state",false);
+            map.put("msg",curUser.getUserName() + "未进入澡堂！");
+            return map;
+        }
         curUser.setIsShower(0);
         userMapper.updateById(curUser);
 
         //当前澡堂人数-1
-        Bathroom bathroom = bathroomMapper.selectById((Integer) massage.get("bId"));
+        Bathroom bathroom = bathroomMapper.selectById(curUser.getInBath());
         Integer people = bathroom.getPeople();
         bathroom.setPeople(people - 1);
         bathroomMapper.updateById(bathroom);

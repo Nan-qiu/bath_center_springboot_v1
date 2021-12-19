@@ -100,6 +100,13 @@ public class UserController {
     @PostMapping("/spend")
     public Map<String, Object> spend(@RequestBody Map<String, Object> massage){
         HashMap<String, Object> map = new HashMap<>();
+        User curUser = userMapper.selectById((Integer) massage.get("userId"));
+        if (curUser.getIsShower()==1){
+            map.put("state",false);
+            map.put("msg","请勿重复进入！cnd");
+            return  map;
+        }
+
         //选择套餐和返回的超时时间
         int spendMoney = 0, time = 0;
         if ((Integer) massage.get("spendWay") == 1){
@@ -112,7 +119,7 @@ public class UserController {
             spendMoney = 25;
             time = 90;
         }
-        User curUser = userMapper.selectById((Integer) massage.get("userId"));
+
         int nMoney = curUser.getMoney();
         if (nMoney < spendMoney){
             map.put("state",false);
