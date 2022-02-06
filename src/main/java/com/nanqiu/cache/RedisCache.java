@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -31,7 +32,7 @@ public class RedisCache implements Cache {
     }
 
     public RedisTemplate<String, Object> getRedisTemplate() {
-        redisTemplate = (RedisTemplate<String, Object>) ApplicationContextUtils.getBean("redisTemplate");
+        RedisTemplate redisTemplate = (RedisTemplate) ApplicationContextUtils.getBean("redisTemplate");
         Jackson2JsonRedisSerializer serializer = new Jackson2JsonRedisSerializer(Object.class);
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
@@ -53,19 +54,23 @@ public class RedisCache implements Cache {
 
     @Override
     public void putObject(Object key, Object value) {
-        redisTemplate = getRedisTemplate();
-        if (value != null) {
+        if (redisTemplate==null){
+            redisTemplate = getRedisTemplate();
+        }
+        if (value!=null) {
             //使用redis hash 类型作为缓存存储模型
-            redisTemplate.opsForHash().put(id, key.toString(), value);
+            redisTemplate.opsForValue().set(key.toString(), value);
         }
     }
 
     @Override
     public Object getObject(Object key) {
-        redisTemplate = getRedisTemplate();
+        if (redisTemplate==null){
+            redisTemplate = getRedisTemplate();
+        }
         try {
             if (key != null) {
-                return redisTemplate.opsForHash().get(id, key.toString());
+                return redisTemplate.opsForValue().get(key.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -8,6 +8,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.cache.annotation.Cacheable;
 
 @Mapper
-//@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
+@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
 public interface UserVoMapper extends BaseMapper<UserVo> {
 }

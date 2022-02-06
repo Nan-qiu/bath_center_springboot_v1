@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2021-12-13
  */
 @Mapper
-//@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
+@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
 public interface HistoryMapper extends BaseMapper<History> {
     @Select("select user_id,user_name,b_name,timeout from history where NOW()>timeout and is_quit=0")
     List<TimeoutVo> queryTimeout();

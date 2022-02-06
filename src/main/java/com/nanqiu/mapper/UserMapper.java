@@ -22,7 +22,7 @@ import java.util.List;
  * @since 2021-12-13
  */
 @Mapper
-//@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
+@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
 public interface UserMapper extends BaseMapper<User> {
 
 }

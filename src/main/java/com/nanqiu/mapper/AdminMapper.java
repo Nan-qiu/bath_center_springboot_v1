@@ -7,6 +7,6 @@ import org.apache.ibatis.annotations.CacheNamespace;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-//@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
+@CacheNamespace(implementation = RedisCache.class,eviction = RedisCache.class)
 public interface AdminMapper extends BaseMapper<Admin> {
 }
