@@ -23,4 +23,6 @@ public class Admin {
     private Integer role;
     @TableLogic
     private Integer isDelete;
+    @TableField(exist = false)
+    private String imageCode;
 }

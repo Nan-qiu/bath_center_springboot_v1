@@ -9,7 +9,7 @@ import com.nanqiu.entity.VO.UserVo;
 import com.nanqiu.mapper.BathroomMapper;
 import com.nanqiu.mapper.HistoryMapper;
 import com.nanqiu.mapper.UserMapper;
-import com.nanqiu.mapper.UserVoMapper;
+import com.nanqiu.utils.UserUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,6 @@ public class UserController {
     private BathroomMapper bathroomMapper;
     @Autowired
     private HistoryMapper historyMapper;
-    @Autowired
-    private UserVoMapper userVoMapper;
 
 //    @ApiImplicitParam(name = "user",value = "用户对象",required = true)
 //    @ApiOperation(value = "通过登录表单生成一个user对象，再查询")
@@ -147,9 +146,13 @@ public class UserController {
     @GetMapping("/queryAll")
     public Map<String, Object> queryAll(int curPage){
         HashMap<String, Object> map = new HashMap<>();
-        Page<UserVo> page = new Page<>(curPage,10);
-        Page<UserVo> userPage = userVoMapper.selectPage(page,null);
-        map.put("userList",userPage.getRecords());
+        Page<User> page = new Page<>(curPage,10);
+        Page<User> userPage = userMapper.selectPage(page,null);
+        ArrayList<UserVo> userVos = new ArrayList<>();
+        for(User record : userPage.getRecords()){
+            userVos.add(UserUtils.toUserVo(record));
+        }
+        map.put("userList",userVos);
         map.put("maxPage",userPage.getPages());
         map.put("total",userPage.getTotal());
         return map;

@@ -14,8 +14,9 @@ public class CorsConfig implements WebMvcConfigurer {
     public CorsFilter corsFilter(){
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedHeader("*");
-        config.addAllowedOrigin("*");
+        config.addAllowedOrigin("http://localhost:8080/");
         config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
         config.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource configurationSource = new UrlBasedCorsConfigurationSource();
         configurationSource.registerCorsConfiguration("/**",config);
